@@ -42,6 +42,10 @@ class Products with ChangeNotifier {
     // ),
   ];
 
+  String authToken = '';
+  String userId = '';
+  Products(this.userId, this.authToken, this._items);
+
   List<Product> get items {
     // }
     return [..._items];
@@ -57,7 +61,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final url = Uri.https(
-        'shop-app-flutter-71a7e-default-rtdb.firebaseio.com', '/products.json');
+        'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/products.json?auth=$authToken');
     try {
       final response = await http.post(url,
           body: json.encode({
@@ -65,7 +69,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite
+            'creatorId': userId
           }));
 
       //the response object returns a map like {"name": <unique-id>}
@@ -82,13 +86,22 @@ class Products with ChangeNotifier {
     }
   }
 
-  Future<void> fetchAndSetProducts() async {
-    final url = Uri.https(
-        'shop-app-flutter-71a7e-default-rtdb.firebaseio.com', '/products.json');
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    var dynamicUrl =
+        'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/products.json?auth=$authToken';
+    if (filterByUser) {
+      dynamicUrl =
+          'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/products.json?auth=$authToken&orderBy="creatorId"&equalTo="$userId"';
+    }
+    final url = Uri.parse(dynamicUrl);
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProducts = [];
+      final url2 = Uri.parse(
+          'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/userFavorites.json/$userId.json?auth=$authToken');
+      final favoriteResponses = await http.get(url2);
+      final favoriteData = json.decode(favoriteResponses.body);
       extractedData.forEach((prodId, prodData) {
         loadedProducts.add(Product(
             id: prodId,
@@ -96,7 +109,8 @@ class Products with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite']));
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false));
       });
       _items = loadedProducts;
       notifyListeners();
@@ -109,9 +123,8 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
       try {
-        final url = Uri.https(
-            'shop-app-flutter-71a7e-default-rtdb.firebaseio.com',
-            '/products/$id.json');
+        final url = Uri.parse(
+            'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
         await http.patch(url,
             body: json.encode({
               'title': newProduct.title,
@@ -130,8 +143,7 @@ class Products with ChangeNotifier {
   Future<void> deleteProduct(String id) async {
     try {
       final url = Uri.https(
-          'shop-app-flutter-71a7e-default-rtdb.firebaseio.com',
-          '/products/$id.json');
+          'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
       final response = await http.delete(url);
       if (response.statusCode >= 400) {
         throw Exception("Something went wrong");

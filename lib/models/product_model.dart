@@ -19,14 +19,13 @@ class Product with ChangeNotifier {
       required this.imageUrl,
       this.isFavorite = false});
 
-  Future<void> toggleFavorite() async {
-    final url = Uri.https('shop-app-flutter-71a7e-default-rtdb.firebaseio.com',
-        '/products/$id.json');
+  Future<void> toggleFavorite(String authToken, String userId) async {
+    final url = Uri.parse(
+        'https://shop-app-flutter-71a7e-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$authToken');
     isFavorite = !isFavorite;
     notifyListeners();
     try {
-      final response =
-          await http.patch(url, body: json.encode({'isFavorite': isFavorite}));
+      final response = await http.put(url, body: json.encode(isFavorite));
       if (response.statusCode >= 400) {
         throw Exception("Something went wrong!");
       }
