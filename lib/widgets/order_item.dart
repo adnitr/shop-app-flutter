@@ -35,29 +35,31 @@ class _OrderItemState extends State<OrderItem> {
               },
             ),
           ),
-          if (_expanded)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-              height: min(widget.order.products.length * 20.0 + 30, 180),
-              child: ListView(
-                  children: widget.order.products
-                      .map((prodItem) => Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                prodItem.title,
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                '${prodItem.quantity}x \$${prodItem.price.toStringAsFixed(2)}',
-                                style:
-                                    TextStyle(fontSize: 18, color: Colors.grey),
-                              )
-                            ],
-                          ))
-                      .toList()),
-            )
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+            height: min(
+                !_expanded ? 0 : widget.order.products.length * 20.0 + 30, 180),
+            child: ListView(
+                children: widget.order.products
+                    .map((prodItem) => Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              prodItem.title,
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${prodItem.quantity}x \$${prodItem.price.toStringAsFixed(2)}',
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.grey),
+                            )
+                          ],
+                        ))
+                    .toList()),
+          )
         ],
       ),
     );

@@ -18,35 +18,46 @@ class ProductDetailScreen extends StatelessWidget {
     final product =
         Provider.of<Products>(context, listen: false).findById(productId);
     return Scaffold(
-      appBar: AppBar(title: Text(product.title)),
-      body: SingleChildScrollView(
-          child: Column(
-        children: [
-          Container(
-            height: 300,
-            width: double.infinity,
-            child: Image.network(
-              product.imageUrl,
-              fit: BoxFit.cover,
+      // appBar: AppBar(title: Text(product.title)),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(product.title),
+              background: Hero(
+                tag: product.id,
+                child: Image.network(
+                  product.imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            '\$${product.price}',
-            style: const TextStyle(color: Colors.grey, fontSize: 20),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            width: double.infinity,
-            child: Text(
-              product.description,
-              textAlign: TextAlign.center,
-              softWrap: true,
-            ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              const SizedBox(height: 10),
+              Text(
+                '\$${product.price}',
+                style: const TextStyle(color: Colors.grey, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                width: double.infinity,
+                child: Text(
+                  product.description,
+                  textAlign: TextAlign.center,
+                  softWrap: true,
+                ),
+              ),
+              const SizedBox(height: 800),
+            ]),
           )
         ],
-      )),
+      ),
     );
   }
 }
